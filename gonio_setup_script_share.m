@@ -26,11 +26,19 @@ tic
 load('xout_yout.mat')
     
 %existing lung masks & centers:
-load('../../Data/Lung/2019_8_26/lung_fw_masks_centers.mat')
+%load('../../Data/Lung/2019_8_26/lung_fw_masks_centers.mat')
+%old masks and centers
+% load('../../Data/Lung/spheres_3/calibration_masks_and_centers.mat')
+% masks and centers from most recent attempt with 13LGS 
+load('../../Data/survey/fresh_13LGS/2019_11_20/trial_2/calibration_masks_and_centers.mat')
 
 %H20 8-26 set
-file=dir(strcat('../../Data/Lung/2019_8_26/47/*bgfw.mat'));
-filename=strcat('../../Data/Lung/2019_8_26/47/',file.name);
+%file=dir(strcat('../../Data/Lung/2019_8_26/47/*bgfw.mat'));
+%filename=strcat('../../Data/Lung/2019_8_26/47/',file.name);
+
+%2019-11-20 water set: 
+file=dir(strcat('../../Data/survey/fresh_13LGS/2019_11_20/trial_2/*13lgs_empty_spotfw.mat'));
+filename=strcat('../../Data/survey/fresh_13LGS/2019_11_20/trial_2/',file.name);
 
 load(filename);
 bg_datacube=mean(datacube,2);
@@ -98,13 +106,19 @@ toc
 
 tic
 %angle mapping, H2O
-load('xout_yout.mat')
+%load('xout_yout.mat')
    
-load('../../Data/Lung/mie_centers_masks_bw_in.mat')
+%load('../../Data/Lung/mie_centers_masks_bw_in.mat')
+%old masks and centers
+%load('../../Data/Lung/spheres_3/calibration_masks_and_centers.mat')
 
 %part of set
-file=dir(strcat('../../Data/Lung/2019_8_26/47/*bgbw.mat'));
-filename=strcat('../../Data/Lung/2019_8_26/47/',file.name);
+%file=dir(strcat('../../Data/Lung/2019_8_26/47/*bgbw.mat'));
+%filename=strcat('../../Data/Lung/2019_8_26/47/',file.name);
+
+%2019-11-20 water set: 
+file=dir(strcat('../../Data/survey/fresh_13LGS/2019_11_20/trial_2/*13lgs_empty_spotbw.mat'));
+filename=strcat('../../Data/survey/fresh_13LGS/2019_11_20/trial_2/',file.name);
 
 load(filename);
 bw_bg_datacube=datacube;
@@ -156,8 +170,8 @@ if set_calibration
     %temp dummy inputs:
     for n=1:4,masks_bw_in{n}=0;end
     mie_centers_bw_in=zeros(4,2);
-    analysis_settings_bw.use_input_mask_on=1;
-    analysis_settings_bw.center_lookup_on=1;
+    analysis_settings_bw.use_input_mask_on=0;
+    analysis_settings_bw.center_lookup_on=0;
 end
 
 %%
@@ -193,8 +207,8 @@ for file_n=1:how_many_files
 %fw
 
 %september sphere set: 
-file=dir(strcat('../../Data/Lung/spheres_3/*spheresfw.mat'));
-filename=strcat('../../Data/Lung/spheres_3/',file.name);
+%file=dir(strcat('../../Data/Lung/spheres_3/*spheresfw.mat'));
+%filename=strcat('../../Data/Lung/spheres_3/',file.name);
 
 %Human Lung, 9-25 sets.. 
 %file=dir(strcat('../../Data/Lung/2019_9_25/',tissue_type,'/','*lung_',tissue_type,'_',num2str(file_n),'fw.mat'));
@@ -207,6 +221,9 @@ filename=strcat('../../Data/Lung/spheres_3/',file.name);
 %file=dir(strcat('../../Data/Lung/',date_folder,tissue_type,'/','*',tissue_type,'_',num2str(file_n),'fw.mat'));
 %filename=strcat('../../Data/Lung/',date_folder,tissue_type,'/',file.name);
 
+%2019-11-20 sphere set: 
+file=dir(strcat('../../Data/survey/fresh_13LGS/2019_11_20/trial_2/*spheresfw.mat'));
+filename=strcat('../../Data/survey/fresh_13LGS/2019_11_20/trial_2/',file.name);
 
 bg_datacube=0;
 load(filename);
@@ -216,8 +233,8 @@ fw_datacube=datacube-bg_datacube;
 %bw
 %september sphere sets: 
 
-file=dir(strcat('../../Data/Lung/spheres_3/*spheresbw.mat'));
-filename=strcat('../../Data/Lung/spheres_3/',file.name);
+%file=dir(strcat('../../Data/Lung/spheres_3/*spheresbw.mat'));
+%filename=strcat('../../Data/Lung/spheres_3/',file.name);
 
 
 %Human Lung sets
@@ -230,6 +247,10 @@ filename=strcat('../../Data/Lung/spheres_3/',file.name);
 %oct
 %file=dir(strcat('../../Data/Lung/',date_folder,tissue_type,'/','*',tissue_type,'_',num2str(file_n),'bw.mat'));
 %filename=strcat('../../Data/Lung/',date_folder,tissue_type,'/',file.name);
+
+%2019-11-20 sphere set: 
+file=dir(strcat('../../Data/survey/fresh_13LGS/2019_11_20/trial_2/*spheresbw.mat'));
+filename=strcat('../../Data/survey/fresh_13LGS/2019_11_20/trial_2/',file.name);
 
 %
 bw_bg_datacube=0;
@@ -244,7 +265,12 @@ before=datetime;
 %loop through our colors
 
 % examine the individual colors %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-for color_n=1:4
+max_colors=4;
+if set_calibration
+    max_colors=1; %this could be modified to make color-specific masks
+end
+
+for color_n=1:max_colors
     
     %plot the Mie pattern:
     lambda=series_settings(color_n,1)/1000; 
@@ -266,6 +292,7 @@ for color_n=1:4
     angle_cube_bw=squeeze(bw_datacube(color_n,:,:,:));
     
     %forward analysis
+    %
     for angle_n=1:1:7
         angle_n    ;
         bg_of_interest=0;           
@@ -280,7 +307,7 @@ for color_n=1:4
        % pause(1)
         close(2)
         %visualize phase function
-        %phase_fn_vis_3d(lists_out_angles{angle_n},'raw');
+      %  phase_fn_vis_3d(lists_out_angles{angle_n},'raw');
         %plot the trace
         
     end %angle no
@@ -457,13 +484,26 @@ disp(['r squareds range from ',num2str(rs_min,2),' to ',num2str(rs_max,2)])
 
 
 %% output and save the masks and centers.. 
-
-
+if set_calibration
+    
+    analysis_settings.use_input_mask_on=1;
+    analysis_settings.center_lookup_on=1;
+    analysis_settings_bw.use_input_mask_on=1;
+    analysis_settings_bw.center_lookup_on=1;
+    
 %after first run, to set masks and centers: 
-%mie_centers_fw_in=mie_centers_fw;
-%masks_fw_in=mask_out_cell_fw;
+mie_centers_fw_in=mie_centers_fw;
+masks_fw_in=mask_out_cell_fw;
+mie_centers_bw_in=mie_centers_bw;
+masks_bw_in=mask_out_cell_bw;
 
+filename_string='calibration_masks_and_centers';
+filename=strcat('../../Data/survey/fresh_13LGS/2019_11_20/trial_2/',filename_string,'.mat')
 
-%after first run, to set masks and centers: 
-%mie_centers_bw_in=mie_centers_bw;
-%masks_bw_in=mask_out_cell_bw;
+if isfile(filename)
+     disp('xxxx Note: file exists, not saved, choose a different name. xxxx')
+else
+    save(filename,'masks_fw_in','mie_centers_fw_in','masks_bw_in','mie_centers_bw_in','analysis_settings','analysis_settings_bw','ancillary_inputs','ancillary_inputs_bw')
+end
+
+end
