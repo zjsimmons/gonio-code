@@ -520,3 +520,44 @@ else
 end
 
 end
+
+
+%%
+
+%display results. 
+%human set:
+%folder='2019_9_25';tissue_types={'32';'47';'50'};type_colors='rbr';title_word='human ';figure_no=200;  %tissue_type='43'; bad sample. 
+
+%mouse set:
+%folder='2019_9_30';tissue_types={'13';'6'};type_colors='rbr';title_word='mouse ';figure_no=21; %tissue_type='43'; bad sample. 
+%}
+
+
+folder='2019_11_20/';
+
+%tissue_types_cell_grid={'27_3';'27_4';'28_5';'28_6';'28_11';'28_13'}
+tissue_types={'trial_1';'trial_2'}
+figure_no=100;
+type_colors='rr'
+title_word='fresh 13LGS retina';
+
+%averaged spectral response.. 
+for type_no=1:length(tissue_types)
+
+    load(strcat('../../Data/survey/fresh_13LGS/',folder,'/',(tissue_types{type_no}),'_summary_weighted_fits.mat'))
+%    
+    g_averages=mean(g_chart_cube,3);
+    g_stds=std(g_chart_cube,0,3);
+    
+    figure(figure_no)
+  %  plot(g_averages(:,1),g_averages(:,2),'--r',g_averages(:,1),g_averages(:,3),'r')%gfit, gint
+    errorbar(g_averages(:,1),g_averages(:,2),g_stds(:,2),strcat('--',type_colors(type_no)))
+    hold on,
+      errorbar(g_averages(:,1),g_averages(:,3),g_stds(:,3),strcat('-',type_colors(type_no)))%column 3 is gint
+
+end
+      xlim([.55 .825])
+      xlabel('wavelength')
+      ylabel('g')
+  %    title({[title_word,' lung g comparison'];'blue normal, red fibrotic, solid-integrated'})
+  title(title_word)
